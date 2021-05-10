@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Gamedev Canvas Workshop</title>
+    <style>
+    	* { padding: 0; margin: 0; }
+    	canvas { background: #eee; display: block; margin: 0 auto; }
+    </style>
+</head>
+<body>
+
+<canvas id="myCanvas" width="800" height="600"></canvas>
+
+<script>
+// JavaScript code goes here
+    var canvas = document.getElementById("myCanvas");
+    var ctx = canvas.getContext("2d");
+
+	var x = canvas.width/8;
+	var y = canvas.height-30;
+	var dx = 0;
+	var dy = -2;
+	var platformWidth = 60;
+	var platformHeight = 10;
+	var platformXcoords = [];
+	var platformYcoords = [];
+	var maxBallSpeed = 4;
+
+	var ballRadius = 10;
+
+	var rightPressed = false;
+	var leftPressed = false;
+
+
+	function drawBall() {
+	    ctx.beginPath();
+	    ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+	    ctx.fillStyle = "#0095DD";
+	    ctx.fill();
+	    ctx.closePath();
+	}
+
+	function drawPlatforms() {
+		newPlatform(0, canvas.height-platformHeight-1)
+		
+		newPlatform(canvas.width/4, canvas.height*3/4);
+		
+		newPlatform(canvas.width/2, canvas.height/2);
+		
+		newPlatform(canvas.width*3/4, canvas.height/4);
+		
+		platformXcoords = [0, canvas.width/4, canvas.width/2, canvas.width*3/4];
+		platformYcoords = [canvas.height-platformHeight-1, canvas.width*3/4, canvas.width/2, canvas.width/4];
+	}
+
+	function newPlatform(input_x, input_y){
+		ctx.beginPath();
+	    ctx.rect(input_x, input_y, platformWidth, platformHeight);
+	  	ctx.fillStyle = "#0095DD";
+	    ctx.fill();
+	    ctx.closePath();
+	}
+
+	function collisionDetection() {
+		for(i = 0; i < platformXcoords.length; i++) {
+			if(x > platformXcoords[i] && x < platformXcoords[i] + platformWidth && y > platformYcoords[i] && y < platformYcoords[i] + platformHeight){
+				dy = -dy;
+			}
+		}
+	}
+
+	function draw() {
+	    ctx.clearRect(0, 0, canvas.width, canvas.height);
+	    drawBall();
+	    drawPlatforms();
+	    collisionDetection();
+
+	    console.log(platformXcoords)
+
+		if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
+		    dx = -dx;
+		}
+		if(y + dy < ballRadius) {
+    		dy = -dy;
+		} else if(y + dy > canvas.height-ballRadius) {
+        	alert("GAME OVER");
+        	document.location.reload();
+        	clearInterval(interval);
+    	}
+	}
+
+	    x += dx;
+	    y += dy;
+    if(rightPressed) {
+	    if (dx <= maxBallSpeed){
+	     	dx += 0.5;
+	    }
+	}
+	else if(leftPressed) {
+	    if (dx >= -maxBallSpeed){
+	     	dx -= 0.5;
+	    }
+	}
+
+	dy -= 0.5*dy;
+
+	document.addEventListener("keydown", keyDownHandler, false);
+	document.addEventListener("keyup", keyUpHandler, false);
+
+
+	function keyDownHandler(e) {
+	    if(e.key == "Right" || e.key == "ArrowRight") {
+	        rightPressed = true;
+	    }
+	    else if(e.key == "Left" || e.key == "ArrowLeft") {
+	        leftPressed = true;
+	    }
+	}
+
+	function keyUpHandler(e) {
+	    if(e.key == "Right" || e.key == "ArrowRight") {
+	        rightPressed = false;
+	    }
+	    else if(e.key == "Left" || e.key == "ArrowLeft") {
+	        leftPressed = false;
+	    }
+	}
+
+	var interval = setInterval(draw, 10);
+
+</script>
+
+</body>
+</html>
