@@ -17,10 +17,10 @@
     var canvas = document.getElementById("myCanvas");
     var ctx = canvas.getContext("2d");
 
-	var x = canvas.width/8;
-	var y = canvas.height-30;
+	var x = canvas.width/16;
+	var y = canvas.height/2;
 	var dx = 0;
-	var dy = -2;
+	var dy = 2;
 	var platformWidth = 60;
 	var platformHeight = 10;
 	var platformXcoords = [];
@@ -62,19 +62,11 @@
 	    ctx.closePath();
 	}
 
-	function collisionDetection() {
-		for(i = 0; i < platformXcoords.length; i++) {
-			if(x > platformXcoords[i] && x < platformXcoords[i] + platformWidth && y > platformYcoords[i] && y < platformYcoords[i] + platformHeight){
-				dy = -dy;
-			}
-		}
-	}
 
 	function draw() {
 	    ctx.clearRect(0, 0, canvas.width, canvas.height);
 	    drawBall();
 	    drawPlatforms();
-	    collisionDetection();
 
 	    console.log(platformXcoords)
 
@@ -83,27 +75,38 @@
 		}
 		if(y + dy < ballRadius) {
     		dy = -dy;
-		} else if(y + dy > canvas.height-ballRadius) {
+		} 
+
+		var isPlatformUnderneath = false;
+		
+		for(i = 0; i < platformXcoords.length; i++) {
+			if(x > platformXcoords[i] && x < platformXcoords[i] + platformWidth && y > platformYcoords[i] && y < platformYcoords[i] + platformHeight){
+				dy = -dy;
+				isPlatformUnderneath = true; 
+			}
+		}
+
+		if(y + dy > canvas.height-ballRadius && !isPlatformUnderneath) {
         	alert("GAME OVER");
         	document.location.reload();
         	clearInterval(interval);
-    	}
+    	}	
+
+   		x += dx;
+   		y += dy;
+
+		if(rightPressed) {
+	    	if (dx <= maxBallSpeed){
+	     		dx += 0.5;
+	    	}
+		}
+		else if(leftPressed) {
+	    	if (dx >= -maxBallSpeed){
+	     		dx -= 0.5;
+	    	}
+		}
 	}
 
-	    x += dx;
-	    y += dy;
-    if(rightPressed) {
-	    if (dx <= maxBallSpeed){
-	     	dx += 0.5;
-	    }
-	}
-	else if(leftPressed) {
-	    if (dx >= -maxBallSpeed){
-	     	dx -= 0.5;
-	    }
-	}
-
-	dy -= 0.5*dy;
 
 	document.addEventListener("keydown", keyDownHandler, false);
 	document.addEventListener("keyup", keyUpHandler, false);
