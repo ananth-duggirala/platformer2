@@ -29,9 +29,10 @@
 
 	var ballRadius = 10;
 
+	var g = 0.2 // gravitational acceleration
+
 	var rightPressed = false;
 	var leftPressed = false;
-
 
 	function drawBall() {
 	    ctx.beginPath();
@@ -69,7 +70,7 @@
 	    drawPlatforms();
 
 	    console.log(platformXcoords)
-
+	    dy += g
 		if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
 		    dx = -dx;
 		}
@@ -80,16 +81,17 @@
 		var isPlatformUnderneath = false;
 		
 		for(i = 0; i < platformXcoords.length; i++) {
-			if(x > platformXcoords[i] && x < platformXcoords[i] + platformWidth && y > platformYcoords[i] && y < platformYcoords[i] + platformHeight){
+			if(x > platformXcoords[i] && x < platformXcoords[i] + platformWidth && y < platformYcoords[i] && y + ballRadius + dy > platformYcoords[i] + platformHeight){
 				dy = -dy;
 				isPlatformUnderneath = true; 
 			}
 		}
 
 		if(y + dy > canvas.height-ballRadius && !isPlatformUnderneath) {
-        	alert("GAME OVER");
-        	document.location.reload();
-        	clearInterval(interval);
+			dy = -dy;
+//        	alert("GAME OVER"); 
+//        	document.location.reload();
+//        	clearInterval(interval);
     	}	
 
    		x += dx;
