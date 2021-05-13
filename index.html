@@ -10,7 +10,7 @@
 </head>
 <body>
 
-<canvas id="myCanvas" width="800" height="600"></canvas>
+<canvas id="myCanvas" width="800" height="900"></canvas>
 
 <script>
 // JavaScript code goes here
@@ -20,7 +20,7 @@
 	var x = canvas.width/16;
 	var y = canvas.height/2;
 	var dx = 0;
-	var dy = 2;
+	var dy = 0.5;
 	var platformWidth = 60;
 	var platformHeight = 10;
 	var platformXcoords = [];
@@ -29,11 +29,11 @@
 
 	var ballRadius = 10;
 
-	var g = 0.2 // gravitational acceleration
+	var g = 0.1 // gravitational acceleration
 
 	var rightPressed = false;
 	var leftPressed = false;
-
+	var time = 0;
 	function drawBall() {
 	    ctx.beginPath();
 	    ctx.arc(x, y, ballRadius, 0, Math.PI*2);
@@ -65,35 +65,40 @@
 
 
 	function draw() {
+		time += 1;
 	    ctx.clearRect(0, 0, canvas.width, canvas.height);
 	    drawBall();
 	    drawPlatforms();
+		if (time % 10 == 0)
+			console.log("t = " + time + " v_y = " + dy + " y = " + y);
 
-	    console.log(platformXcoords)
-	    dy += g
 		if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
 		    dx = -dx;
 		}
 		if(y + dy < ballRadius) {
     		dy = -dy;
 		} 
-
+		
 		var isPlatformUnderneath = false;
 		
-		for(i = 0; i < platformXcoords.length; i++) {
-			if(x > platformXcoords[i] && x < platformXcoords[i] + platformWidth && y < platformYcoords[i] && y + ballRadius + dy > platformYcoords[i] + platformHeight){
-				dy = -dy;
-				isPlatformUnderneath = true; 
-			}
-		}
+		// for(i = 0; i < platformXcoords.length; i++) {
+		// 	if(x > platformXcoords[i] && x < platformXcoords[i] + platformWidth && y < platformYcoords[i] && y + ballRadius + dy > platformYcoords[i] + platformHeight){
+		// 		dy = -dy;
+		// 		isPlatformUnderneath = true; 
+		// 		console.log("platform under");
+		// 	}
+		// }
 
-		if(y + dy > canvas.height-ballRadius && !isPlatformUnderneath) {
+		// if(y + dy > canvas.height-ballRadius && !isPlatformUnderneath) {
+		if(y > canvas.height-ballRadius) {
 			dy = -dy;
+			// console.log()
 //        	alert("GAME OVER"); 
 //        	document.location.reload();
 //        	clearInterval(interval);
     	}	
 
+	    dy += g
    		x += dx;
    		y += dy;
 
