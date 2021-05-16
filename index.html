@@ -20,14 +20,14 @@
 	var x = canvas.width/16;
 	var y = canvas.height/2;
 	var dx = 0;
-	var dy = 0.5;
+	var dy = 0;
 	var platformWidth = 60;
 	var platformHeight = 10;
 	var platformXcoords = [];
 	var platformYcoords = [];
 	var maxBallSpeed = 4;
 
-	var ballRadius = 10;
+	var ballRadius = 15;
 
 	var g = 0.1 // gravitational acceleration
 
@@ -69,7 +69,7 @@
 	    ctx.clearRect(0, 0, canvas.width, canvas.height);
 	    drawBall();
 	    drawPlatforms();
-		if (time % 10 == 0)
+		// if (time % 10 == 0)
 			console.log("t = " + time + " v_y = " + dy + " y = " + y);
 
 		if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
@@ -96,11 +96,16 @@
 //        	alert("GAME OVER"); 
 //        	document.location.reload();
 //        	clearInterval(interval);
-    	}	
+		x += dx;
+   		y += dy;
 
-	    dy += g
+    	} else {
+
+			dy += g
    		x += dx;
    		y += dy;
+
+		}	
 
 		if(rightPressed) {
 	    	if (dx <= maxBallSpeed){
