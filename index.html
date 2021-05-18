@@ -38,6 +38,7 @@
 		var platformXcoords = [];
 		var platformYcoords = [];
 		var maxBallSpeed = 4;
+		X_ACCL = 0.2;
 
 		var g = 0.1 // gravitational acceleration
 
@@ -92,13 +93,14 @@
 
 			var isPlatformUnderneath = false;
 
-			// for(i = 0; i < platformXcoords.length; i++) {
-			// 	if(x > platformXcoords[i] && x < platformXcoords[i] + platformWidth && y < platformYcoords[i] && y + ballRadius + dy > platformYcoords[i] + platformHeight){
-			// 		dy = -dy;
-			// 		isPlatformUnderneath = true; 
-			// 		console.log("platform under");
-			// 	}
-			// }
+			for(i = 0; i < platformXcoords.length; i++) {
+				if(x > platformXcoords[i] && x < platformXcoords[i] + platformWidth && y < platformYcoords[i] && y + ballRadius + dy >= platformYcoords[i]){
+					dy = Math.min(dy, 0);
+					y = platformYcoords[i] - ballRadius;
+					isPlatformUnderneath = true; 
+					console.log("platform under");
+				}
+			}
 
 			// if(y + dy > canvas.height-ballRadius && !isPlatformUnderneath) {
 			if (y >= canvas.height - ballRadius) {
@@ -114,10 +116,7 @@
 					y += dy;
 				}
 				x += dx;
-				
-
 			} else {
-
 				dy += g
 				x += dx;
 				y += dy;
@@ -126,16 +125,16 @@
 
 			if (rightPressed) {
 				if (dx <= maxBallSpeed) {
-					dx += 0.5;
+					dx += X_ACCL;
 				}
 			}
 			else if (leftPressed) {
 				if (dx >= -maxBallSpeed) {
-					dx -= 0.5;
+					dx -= X_ACCL;
 				}
 			}
-			else if (upPressed ) {
-				if (Math.abs(dy) < 0.5) {
+			else if (upPressed) {
+				if (dy == 0) {
 					dy = -7.5;
 				}
 			} 
