@@ -116,7 +116,11 @@
 					y += dy;
 				}
 				x += dx;
-			} else {
+			}
+			else if (isPlatformUnderneath){
+				x += dx; 
+			}
+			else{
 				dy += g
 				x += dx;
 				y += dy;
@@ -133,7 +137,7 @@
 					dx -= X_ACCL;
 				}
 			}
-			else if (upPressed) {
+			if (upPressed) {
 				if (dy == 0) {
 					dy = -7.5;
 				}
