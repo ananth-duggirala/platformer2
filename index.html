@@ -24,6 +24,31 @@
 
 	<script>
 		// JavaScript code goes here
+
+		class RectangularPlatform {
+			constructor(x1, y1, x2,  y2, ctx) {
+				this.x1 = x1;
+				this.y1 = y1;
+				this.x2 = x2;
+				this.y2 = y2;
+				// drawPlatform(ctx);
+			}
+
+			drawPlatform(ctx) {
+				ctx.beginPath();
+				ctx.rect(x1, y1, x2 - x1, y2 - y1);
+				ctx.fillStyle = "#0095DD";
+				ctx.fill();
+				ctx.closePath();
+			}
+		}
+
+		class User {
+			constructor(x, y, radius, x_vel, y_vel) {
+
+			}
+		}
+
 		var canvas = document.getElementById("myCanvas");
 		var ctx = canvas.getContext("2d");
 
