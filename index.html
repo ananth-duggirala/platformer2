@@ -45,9 +45,40 @@
 
 		class User {
 			constructor(x, y, radius, x_vel, y_vel) {
+				this.x = x;
+				this.y = y;
+				this.radius = radius;
+				this.x_vel = x_vel;
+				this.y_vel = y_vel;								
+			}
 
+			drawUser(ctx) {
+				ctx.beginPath();
+				ctx.arc(x, y, radius, 0, Math.PI * 2);
+				ctx.fillStyle = "#0095DD";
+				ctx.fill();
+				ctx.closePath();				
 			}
 		}
+
+		class Agent {
+			constructor(x, y, radius, x_vel, y_vel) {
+				this.x = x;
+				this.y = y;
+				this.radius = radius;
+				this.x_vel = x_vel;
+				this.y_vel = y_vel;								
+			}
+
+			drawUser(ctx) {
+				ctx.beginPath();
+				ctx.arc(x, y, radius, 0, Math.PI * 2);
+				ctx.fillStyle = "#0095DD";
+				ctx.fill();
+				ctx.closePath();				
+			}
+		}
+
 
 		var canvas = document.getElementById("myCanvas");
 		var ctx = canvas.getContext("2d");
