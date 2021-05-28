@@ -26,17 +26,21 @@
 		// JavaScript code goes here
 
 		class RectangularPlatform {
+			width;
+			height;
 			constructor(x1, y1, x2, y2) {
 				this.x1 = x1;
 				this.y1 = y1;
 				this.x2 = x2;
 				this.y2 = y2;
+				this.height = y2 - y1;
+				this.width = x2 - x1;
 				// drawPlatform(ctx);
 			}
 
 			drawPlatform(ctx) {
 				ctx.beginPath();
-				ctx.rect(this.x1, this.y1, this.x2 - this.x1, this.y2 - this.y1);
+				ctx.rect(this.x1, this.y1, this.width, this.height);
 				ctx.fillStyle = "#0095DD";
 				ctx.fill();
 				ctx.closePath();
@@ -49,7 +53,7 @@
 				this.y = y;
 				this.radius = radius;
 				this.x_vel = x_vel;
-				this.y_vel = y_vel;								
+				this.y_vel = y_vel;
 			}
 
 			drawUser(ctx) {
@@ -57,7 +61,7 @@
 				ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); //change this back
 				ctx.fillStyle = "#0095DD";
 				ctx.fill();
-				ctx.closePath();				
+				ctx.closePath();
 			}
 		}
 
@@ -67,7 +71,7 @@
 				this.y = y;
 				this.radius = radius;
 				this.x_vel = x_vel;
-				this.y_vel = y_vel;								
+				this.y_vel = y_vel;
 			}
 
 			drawUser(ctx) {
@@ -75,18 +79,18 @@
 				ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
 				ctx.fillStyle = "#0095DD";
 				ctx.fill();
-				ctx.closePath();				
+				ctx.closePath();
 			}
 		}
 
 		function loadMap(canvas) {
-			var platforms = []; 
-			for (var i=0; i<4; i++) {
-				x1 = i * canvas.width/4;
-				y1 = (4-i) * canvas.height/4;
+			var platforms = [];
+			for (var i = 0; i < 4; i++) {
+				x1 = i * canvas.width / 4;
+				y1 = (4 - i) * canvas.height / 4;
 				x2 = x1 + 60;
 				y2 = y1 - 10;
-				platforms.push(new RectangularPlatform(x1, y1, x2, y2));		
+				platforms.push(new RectangularPlatform(x1, y1, x2, y2));
 			}
 			return platforms;
 		}
@@ -106,7 +110,7 @@
 		var maxBallSpeed = 4;
 		X_ACCL = 0.2;
 
-		var g = 0.1 // gravitational acceleration
+		var G = 0.1 // gravitational acceleration
 
 
 		var user = new User(x, y, ballRadius, dx, dy);
@@ -117,91 +121,97 @@
 		var upPressed = false;
 		var time = 0;
 
+		class CollisionDetection {
+			constructor(width, height, user, platforms, g) {
+				this.width = width;
+				this.height = height;
+				this.user = user;
+				this.platforms = platforms;
+				this.g = g;
+			}
 
-		platformXcoords = [0, canvas.width / 4, canvas.width / 2, canvas.width * 3 / 4];
-		platformYcoords = [canvas.height - platformHeight, canvas.height * 3 / 4 - platformHeight, canvas.height / 2 - platformHeight, canvas.height / 4 - platformHeight];
+			detectCollisionAndUpdate() {
+				// 1. Detect collision with side and top walls 
+				if (this.user.x + this.user.x_vel > this.width - this.user.radius ||
+					this.user.x + this.user.x_vel < this.user.radius) {
+					this.user.x_vel = -this.user.x_vel;
+				}
+				if (this.user.y + this.user.y_vel < this.user.radius) {
+					this.user.y_vel = -this.user.y_vel;
+				}
 
-		console.log("hello" + user.radius);
-	
-		function newPlatform(input_x, input_y) {
-			ctx.beginPath();
-			ctx.rect(input_x, input_y, platformWidth, platformHeight);
-			ctx.fillStyle = "#0095DD";
-			ctx.fill();
-			ctx.closePath();
+				// 2. Detect collision with platforms
+				var isPlatformUnderneath = false;
+
+				for (var i = 0; i < this.platforms.length; i++) {
+					if (this.user.x > this.platforms[i].x1 && this.user.x < this.platforms[i].x1 + this.platforms[i].width
+						&& this.user.y < this.platforms[i].y1 && this.user.y + this.user.radius + this.user.y_vel >= this.platforms[i].y1) {
+						this.user.y_vel = Math.min(this.user.y_vel, 0);
+						this.user.y = this.platforms[i].y1 - this.user.radius;
+						isPlatformUnderneath = true;
+						console.log("platform under");
+					}
+				}
+
+				// 3. Floor detection and update velocities
+				this.user.x += this.user.x_vel;
+				if (this.user.y >= this.height - this.user.radius) {
+					// console.log()
+					//        	alert("GAME OVER"); 
+					//        	document.location.reload();
+					//        	clearInterval(interval);
+					this.user.y_vel = Math.min(this.user.y_vel, 0);
+					if (this.user.y_vel == 0) {
+						this.user.y = this.height - this.user.radius;
+					} else {
+						this.user.y += this.user.y_vel;
+					}
+				}
+				else if (!isPlatformUnderneath) {
+					this.user.y_vel += this.g
+					this.user.y += this.user.y_vel;
+				}
+
+
+			}
 		}
 
+		// platformXcoords = [0, canvas.width / 4, canvas.width / 2, canvas.width * 3 / 4];
+		// platformYcoords = [canvas.height - platformHeight, canvas.height * 3 / 4 - platformHeight, canvas.height / 2 - platformHeight, canvas.height / 4 - platformHeight];
+
+		console.log("hello" + user.radius);
+
+		var collisionEngine = new CollisionDetection(canvas.width, canvas.height, user, platforms, G);
 
 		function draw() {
 			time += 1;
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 			user.drawUser(ctx);
 
-			for (var i=0; i<platforms.length; i++) {
+			for (var i = 0; i < platforms.length; i++) {
 				platforms[i].drawPlatform(ctx);
 			}
 
 			// if (time % 10 == 0)
 			console.log("t = " + time + " v_y = " + dy + " y = " + y);
+			collisionEngine.detectCollisionAndUpdate();
 
-			if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
-				dx = -dx;
-			}
-			if (y + dy < ballRadius) {
-				dy = -dy;
-			}
-
-			var isPlatformUnderneath = false;
-
-			for(i = 0; i < platformXcoords.length; i++) {
-				if(x > platformXcoords[i] && x < platformXcoords[i] + platformWidth && y < platformYcoords[i] && y + ballRadius + dy >= platformYcoords[i]){
-					dy = Math.min(dy, 0);
-					y = platformYcoords[i] - ballRadius;
-					isPlatformUnderneath = true; 
-					console.log("platform under");
-				}
-			}
-
-			// if(y + dy > canvas.height-ballRadius && !isPlatformUnderneath) {
-			if (y >= canvas.height - ballRadius) {
-				// dy = -dy;
-				// console.log()
-				//        	alert("GAME OVER"); 
-				//        	document.location.reload();
-				//        	clearInterval(interval);
-				dy = Math.min(dy, 0);
-				if (dy == 0) {
-					y =  canvas.height - ballRadius;
-				} else {
-					y += dy;
-				}
-				x += dx;
-			}
-			else if (isPlatformUnderneath){
-				x += dx; 
-			}
-			else{
-				dy += g
-				x += dx;
-				y += dy;
-
-			}
 
 			if (rightPressed) {
-				if (dx <= maxBallSpeed) {
-					dx += X_ACCL;
+				if (user.x_vel <= maxBallSpeed) {
+					user.x_vel += X_ACCL;
 				}
 			}
 			else if (leftPressed) {
-				if (dx >= -maxBallSpeed) {
-					dx -= X_ACCL;
+				if (user.x_vel >= -maxBallSpeed) {
+					user.x_vel -= X_ACCL;
 				}
 			}
 			if (upPressed) {
-				if (dy == 0) {
-					dy = -7.5;
+				if (user.y_vel == 0) {
+					user.y_vel = -7.5;
 				}
-			} 
+			}
 		}
 
 
