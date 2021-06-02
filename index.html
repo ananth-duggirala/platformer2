@@ -145,9 +145,9 @@
 
                 for (var i = 0; i < this.platforms.length; i++) {
                     if (this.user.x > this.platforms[i].x1 && this.user.x < this.platforms[i].x1 + this.platforms[i].width
-                        && this.user.y < this.platforms[i].y1 && this.user.y + this.user.radius + this.user.y_vel >= this.platforms[i].y1) {
+                        && this.user.y < this.platforms[i].y1 && this.user.y + this.user.radius + this.user.y_vel >= this.platforms[i].y1 - platformHeight) {
                         this.user.y_vel = Math.min(this.user.y_vel, 0);
-                        this.user.y = this.platforms[i].y1 - this.user.radius;
+                        this.user.y = this.platforms[i].y1 - platformHeight - this.user.radius;
                         isPlatformUnderneath = true;
                         console.log("platform under");
                     }
