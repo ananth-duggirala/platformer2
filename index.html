@@ -74,10 +74,10 @@
                 this.y_vel = y_vel;
             }
 
-            drawUser(ctx) {
+            drawAgent(ctx) {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = "#0095DD";
+                ctx.fillStyle = "#FF6347";
                 ctx.fill();
                 ctx.closePath();
             }
@@ -108,7 +108,7 @@
         var platformHeight = 10;
 
         var maxBallSpeed = 4;
-        X_ACCL = 0.2;
+        X_ACCL = 0.3;
 
         var G = 0.1 // gravitational acceleration
 
@@ -116,18 +116,66 @@
         var user = new User(x, y, ballRadius, dx, dy);
         var platforms = loadMap(canvas);
 
+        var agents = [
+            // new Agent(canvas.width - 100, canvas.height - 20, 20, 0, 0),
+            new Agent(canvas.width - 150, canvas.height - 20, 20, 0, 0)
+        ];
+
+
         var rightPressed = false;
         var leftPressed = false;
         var upPressed = false;
         var time = 0;
 
         class CollisionDetection {
-            constructor(width, height, user, platforms, g) {
+            constructor(width, height, user, platforms, agents, g) {
                 this.width = width;
                 this.height = height;
                 this.user = user;
                 this.platforms = platforms;
                 this.g = g;
+                this.agents = agents;
+            }
+
+            distSq(x1, y1, x2, y2) {
+                return Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2);
+            }
+
+            detectCollisionWithAgentAndUpdate() {
+
+
+                for (var i = 0; i < this.agents.length; i++) {
+                    // 1. Detect collision with side and top walls 
+                    if (this.agents[i].x + this.agents[i].x_vel > this.width - this.agents[i].radius ||
+                        this.agents[i].x + this.agents[i].x_vel < this.agents[i].radius) {
+                        this.agents[i].x_vel = -this.agents[i].x_vel;
+                    }
+                    if (this.agents[i].y + this.agents[i].y_vel < this.agents[i].radius) {
+                        this.agents[i].y_vel = -this.agents[i].y_vel;
+                    }
+
+                    this.agents[i].x += this.agents[i].x_vel;
+
+                    if (this.agents[i].y >= this.height - this.agents[i].radius) {
+
+                        this.agents[i].y_vel = Math.min(this.agents[i].y_vel, 0);
+                        if (this.agents[i].y_vel == 0) {
+                            this.agents[i].y = this.height - this.agents[i].radius;
+                        } else {
+                            this.agents[i].y += this.agents[i].y_vel;
+                        }
+                    } else {
+                        this.agents[i].y_vel += this.g
+                        this.agents[i].y += this.agents[i].y_vel;
+                    }
+
+                    if (this.distSq(this.user.x, this.user.y, this.agents[i].x, this.agents[i].y)
+                        <= 0.6 * Math.pow(this.user.radius + this.agents[i].radius, 2)) {
+                        // console.log()
+                        return true;
+                    }
+                }
+                return false;
             }
 
             detectCollisionAndUpdate() {
@@ -145,21 +193,17 @@
 
                 for (var i = 0; i < this.platforms.length; i++) {
                     if (this.user.x > this.platforms[i].x1 && this.user.x < this.platforms[i].x1 + this.platforms[i].width
-                        && this.user.y < this.platforms[i].y1 && this.user.y + this.user.radius + this.user.y_vel >= this.platforms[i].y1) {
+                        && this.user.y < this.platforms[i].y1 && this.user.y + this.user.radius + this.user.y_vel >= this.platforms[i].y1 - platformHeight) {
                         this.user.y_vel = Math.min(this.user.y_vel, 0);
-                        this.user.y = this.platforms[i].y1 - this.user.radius;
+                        this.user.y = this.platforms[i].y1 - platformHeight - this.user.radius;
                         isPlatformUnderneath = true;
                         console.log("platform under");
                     }
                 }
-
                 // 3. Floor detection and update velocities
                 this.user.x += this.user.x_vel;
                 if (this.user.y >= this.height - this.user.radius) {
-                    // console.log()
-                    //        	alert("GAME OVER"); 
-                    //        	document.location.reload();
-                    //        	clearInterval(interval);
+
                     this.user.y_vel = Math.min(this.user.y_vel, 0);
                     if (this.user.y_vel == 0) {
                         this.user.y = this.height - this.user.radius;
@@ -178,21 +222,39 @@
 
         console.log("hello" + user.radius);
 
-        var collisionEngine = new CollisionDetection(canvas.width, canvas.height, user, platforms, G);
-
+        var collisionEngine = new CollisionDetection(canvas.width, canvas.height, user, platforms, agents, G);
+        var GAME_OVER = false;
         function draw() {
+
             time += 1;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             user.drawUser(ctx);
-
+            for (var i = 0; i < agents.length; i++) {
+                agents[i].drawAgent(ctx);
+            }
             for (var i = 0; i < platforms.length; i++) {
                 platforms[i].drawPlatform(ctx);
             }
-
             // if (time % 10 == 0)
+
+            if (GAME_OVER) {
+                alert("GAME OVER");
+                document.location.reload();
+                clearInterval(interval);
+            }
+
             console.log("t = " + time + " v_y = " + dy + " y = " + y);
             collisionEngine.detectCollisionAndUpdate();
+            GAME_OVER = collisionEngine.detectCollisionWithAgentAndUpdate();
 
+            // update for agent
+            for (var i = 0; i < agents.length; i++) {
+                var delta_x = user.x - agents[i].x;
+                var delta_y = user.y - agents[i].y;
+                agents[i].x_vel = Math.sign(delta_x) * 1;
+                agents[i].y_vel = agents[i].y_vel == 0 ? Math.sign(delta_y) * -7 : agents[i].y_vel;
+                console.log("agent v_y " + agents[i].y_vel + " agent y " + agents[i].y);
+            }
 
             if (rightPressed) {
                 if (user.x_vel <= maxBallSpeed) {
