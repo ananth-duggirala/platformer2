@@ -252,7 +252,7 @@
                 var delta_x = user.x - agents[i].x;
                 var delta_y = user.y - agents[i].y;
                 agents[i].x_vel = Math.sign(delta_x) * 1;
-                agents[i].y_vel = agents[i].y_vel == 0 ? Math.sign(delta_y) * -7 : agents[i].y_vel;
+                agents[i].y_vel = agents[i].y_vel == 0 ? Math.sign(delta_y) * 7 : agents[i].y_vel;
                 console.log("agent v_y " + agents[i].y_vel + " agent y " + agents[i].y);
             }
 
