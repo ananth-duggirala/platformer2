@@ -83,12 +83,12 @@
             }
         }
 
-        function isReachable(from_x, from_y, to_x, to_y, x_vel, y_vel) {
+        function isReachable(from_x, from_y, to_x, to_y) {
             horizontal_distance = Math.abs(to_x - from_x);
             vertical_distance = Math.abs(to_y - from_y);
-            time_to_reach_vertical_distance = (y_vel + Math.sqrt(y_vel*y_vel - 2*G*vertical_distance))/G; // quadratic formula
-            console.log("something" + horizontal_distance + " " + vertical_distance + " " + time_to_reach_vertical_distance + " " + from_x + " " + from_y + " " + to_x + " " + to_y);
-            return (x_vel*time_to_reach_vertical_distance > horizontal_distance);
+            time_to_reach_vertical_distance = (AGENT_Y_VEL + Math.sqrt(AGENT_Y_VEL * AGENT_Y_VEL - 2 * G * vertical_distance)) / G; // quadratic formula
+            console.log("h_dist = " + horizontal_distance + " v_dist = " + vertical_distance + " time_avail =  " + time_to_reach_vertical_distance + " x1 " + from_x + " y1 " + from_y + " x2 " + to_x + " y2 " + to_y);
+            return (AGENT_X_VEL * time_to_reach_vertical_distance > horizontal_distance);
         }
 
         function loadMap(canvas) {
@@ -100,6 +100,8 @@
                 y2 = y1 - 10;
                 platforms.push(new RectangularPlatform(x1, y1, x2, y2));
             }
+
+            platforms.push(new RectangularPlatform(0, canvas.height - 500, 60, canvas.height - 520));
             return platforms;
         }
 
@@ -116,8 +118,8 @@
         var platformHeight = 10;
 
         var maxBallSpeed = 4;
-        var AGENT_X_VEL = 1;
-        var AGENT_Y_VEL = 8;
+        var AGENT_X_VEL = 4;
+        var AGENT_Y_VEL = 7.5;
         X_ACCL = 0.3;
 
         var G = 0.1 // gravitational acceleration
@@ -132,6 +134,34 @@
         ];
 
         console.log(isReachable(platforms[0].x2, platforms[0].y2, platforms[1].x1, platforms[1].y2, 1.5, 7.5));
+
+        var reachabilityGraph = [];
+        for (var i = 0; i < platforms.length; i++)
+            reachabilityGraph.push([]);
+
+        for (var i = 0; i < platforms.length; i++) {
+            for (var j = i + 1; j < platforms.length; j++) {
+                console.log("i " + i + " j " + j);
+                var reachable = false;
+
+                if (platforms[j].x2 < platforms[i].x1) { // case 2
+                    reachable = isReachable(platforms[i].x1, platforms[i].y2, platforms[j].x2, platforms[j].y2);
+                } else if (platforms[j].x1 > platforms[i].x2) { // case 1
+                    reachable = isReachable(platforms[i].x2, platforms[i].y2, platforms[j].x1, platforms[j].y2);
+                } else { // case 3
+                    reachable = (AGENT_Y_VEL * AGENT_Y_VEL) / (2 * G) >= Math.abs(platforms[i].y2 - platforms[j].y2);
+                }
+
+                if (reachable) {
+                    reachabilityGraph[i].push(j);
+                    reachabilityGraph[j].push(i);
+                }
+
+            }
+        }
+        for (var i = 0; i < platforms.length; i++) {
+            console.log(i + " -> " + reachabilityGraph[i]);
+        }
 
         var rightPressed = false;
         var leftPressed = false;
@@ -206,7 +236,7 @@
                         this.user.y_vel = Math.min(this.user.y_vel, 0);
                         this.user.y = this.platforms[i].y1 - platformHeight - this.user.radius;
                         isPlatformUnderneath = true;
-                        console.log("platform under");
+                        // console.log("platform under");
                     }
                 }
                 // 3. Floor detection and update velocities
@@ -229,7 +259,7 @@
             }
         }
 
-        console.log("hello" + user.radius);
+        // console.log("hello" + user.radius);
 
         var collisionEngine = new CollisionDetection(canvas.width, canvas.height, user, platforms, agents, G);
         var GAME_OVER = false;
@@ -252,7 +282,7 @@
                 clearInterval(interval);
             }
 
-//            console.log("t = " + time + " v_y = " + dy + " y = " + y);
+            //            console.log("t = " + time + " v_y = " + dy + " y = " + y);
             collisionEngine.detectCollisionAndUpdate();
             GAME_OVER = collisionEngine.detectCollisionWithAgentAndUpdate();
 
@@ -262,7 +292,7 @@
                 var delta_y = user.y - agents[i].y;
                 agents[i].x_vel = Math.sign(delta_x) * AGENT_X_VEL;
                 agents[i].y_vel = agents[i].y_vel == 0 ? Math.sign(delta_y) * AGENT_Y_VEL : agents[i].y_vel;
-                console.log("agent v_y " + agents[i].y_vel + " agent y " + agents[i].y);
+                // console.log("agent v_y " + agents[i].y_vel + " agent y " + agents[i].y);
             }
 
             if (rightPressed) {
