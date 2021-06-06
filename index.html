@@ -83,6 +83,14 @@
             }
         }
 
+        function isReachable(from_x, from_y, to_x, to_y, x_vel, y_vel) {
+            horizontal_distance = Math.abs(to_x - from_x);
+            vertical_distance = Math.abs(to_y - from_y);
+            time_to_reach_vertical_distance = (y_vel + Math.sqrt(y_vel*y_vel - 2*G*vertical_distance))/G; // quadratic formula
+            console.log("something" + horizontal_distance + " " + vertical_distance + " " + time_to_reach_vertical_distance + " " + from_x + " " + from_y + " " + to_x + " " + to_y);
+            return (x_vel*time_to_reach_vertical_distance > horizontal_distance);
+        }
+
         function loadMap(canvas) {
             var platforms = [];
             for (var i = 0; i < 4; i++) {
@@ -123,6 +131,7 @@
             new Agent(canvas.width - 150, canvas.height - 20, 20, 0, 0)
         ];
 
+        console.log(isReachable(platforms[0].x2, platforms[0].y2, platforms[1].x1, platforms[1].y2, 1.5, 7.5));
 
         var rightPressed = false;
         var leftPressed = false;
@@ -144,8 +153,6 @@
             }
 
             detectCollisionWithAgentAndUpdate() {
-
-
                 for (var i = 0; i < this.agents.length; i++) {
                     // 1. Detect collision with side and top walls 
                     if (this.agents[i].x + this.agents[i].x_vel > this.width - this.agents[i].radius ||
@@ -226,8 +233,8 @@
 
         var collisionEngine = new CollisionDetection(canvas.width, canvas.height, user, platforms, agents, G);
         var GAME_OVER = false;
-        function draw() {
 
+        function draw() {
             time += 1;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             user.drawUser(ctx);
@@ -245,7 +252,7 @@
                 clearInterval(interval);
             }
 
-            console.log("t = " + time + " v_y = " + dy + " y = " + y);
+//            console.log("t = " + time + " v_y = " + dy + " y = " + y);
             collisionEngine.detectCollisionAndUpdate();
             GAME_OVER = collisionEngine.detectCollisionWithAgentAndUpdate();
 
