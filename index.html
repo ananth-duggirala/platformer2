@@ -108,6 +108,8 @@
         var platformHeight = 10;
 
         var maxBallSpeed = 4;
+        var AGENT_X_VEL = 1;
+        var AGENT_Y_VEL = 8;
         X_ACCL = 0.3;
 
         var G = 0.1 // gravitational acceleration
@@ -117,7 +119,7 @@
         var platforms = loadMap(canvas);
 
         var agents = [
-            // new Agent(canvas.width - 100, canvas.height - 20, 20, 0, 0),
+            new Agent(canvas.width - 200, canvas.height - 20, 20, 0, 0),
             new Agent(canvas.width - 150, canvas.height - 20, 20, 0, 0)
         ];
 
@@ -251,8 +253,8 @@
             for (var i = 0; i < agents.length; i++) {
                 var delta_x = user.x - agents[i].x;
                 var delta_y = user.y - agents[i].y;
-                agents[i].x_vel = Math.sign(delta_x) * 1;
-                agents[i].y_vel = agents[i].y_vel == 0 ? Math.sign(delta_y) * 7 : agents[i].y_vel;
+                agents[i].x_vel = Math.sign(delta_x) * AGENT_X_VEL;
+                agents[i].y_vel = agents[i].y_vel == 0 ? Math.sign(delta_y) * AGENT_Y_VEL : agents[i].y_vel;
                 console.log("agent v_y " + agents[i].y_vel + " agent y " + agents[i].y);
             }
 
