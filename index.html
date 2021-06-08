@@ -120,10 +120,11 @@
         var platformWidth = 60;
         var platformHeight = 10;
 
-        var maxBallSpeed = 4;
+        var maxBallSpeed = 6;
         var AGENT_X_VEL = 1.5;
         var AGENT_Y_VEL = 7.5;
-        X_ACCL = 0.3;
+        X_ACCL = 0.2;
+        USER_Y_VEL = 7.5;
 
         var G = 0.1 // gravitational acceleration
 
@@ -262,7 +263,7 @@
 
 
                     if (this.distSq(this.user.x, this.user.y, this.agents[i].x, this.agents[i].y)
-                        <= 0.6 * Math.pow(this.user.radius + this.agents[i].radius, 2)) {
+                        <= Math.pow(this.user.radius + this.agents[i].radius, 2)) {
                         // console.log()
                         return true;
                     }
@@ -334,10 +335,10 @@
             if (GAME_OVER) {
                 alert("GAME OVER");
                 document.location.reload();
-                clearInterval(interval);
+                // clearInterval(interval);
             }
 
-            //            console.log("t = " + time + " v_y = " + dy + " y = " + y);
+            console.log("t = " + time + " v_y = " + dy + " y = " + y);
             collisionEngine.detectCollisionAndUpdate();
             GAME_OVER = collisionEngine.detectCollisionWithAgentAndUpdate();
 
@@ -352,19 +353,24 @@
 
             if (rightPressed) {
                 if (user.x_vel <= maxBallSpeed) {
+                    // user.x_vel = Math.max(0, user.x_vel) + X_ACCL;
                     user.x_vel += X_ACCL;
                 }
             }
             else if (leftPressed) {
                 if (user.x_vel >= -maxBallSpeed) {
+                    // user.x_vel = Math.min(0, user.x_vel) - X_ACCL;
                     user.x_vel -= X_ACCL;
                 }
             }
             if (upPressed) {
                 if (user.y_vel == 0) {
-                    user.y_vel = -7.5;
+                    user.y_vel = -USER_Y_VEL;
                 }
             }
+
+            requestAnimationFrame(draw);
+            // draw();
         }
 
 
@@ -396,7 +402,8 @@
             }
         }
 
-        var interval = setInterval(draw, 10);
+        // var interval = setInterval(draw, 10);
+        requestAnimationFrame(draw);
 
     </script>
 
