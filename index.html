@@ -48,12 +48,13 @@
         }
 
         class User {
-            constructor(x, y, radius, x_vel, y_vel) {
+            constructor(x, y, radius, x_vel, y_vel, pf) {
                 this.x = x;
                 this.y = y;
                 this.radius = radius;
                 this.x_vel = x_vel;
                 this.y_vel = y_vel;
+                this.pf = pf;
             }
 
             drawUser(ctx) {
@@ -66,12 +67,13 @@
         }
 
         class Agent {
-            constructor(x, y, radius, x_vel, y_vel) {
+            constructor(x, y, radius, x_vel, y_vel, pf) {
                 this.x = x;
                 this.y = y;
                 this.radius = radius;
                 this.x_vel = x_vel;
                 this.y_vel = y_vel;
+                this.pf = pf;
             }
 
             drawAgent(ctx) {
@@ -93,7 +95,8 @@
 
         function loadMap(canvas) {
             var platforms = [];
-            for (var i = 0; i < 4; i++) {
+            platforms.push(new RectangularPlatform(0, canvas.height, canvas.width, canvas.height - 10))
+            for (var i = 1; i < 4; i++) {
                 x1 = i * canvas.width / 4;
                 y1 = (4 - i) * canvas.height / 4;
                 x2 = x1 + 60;
@@ -125,12 +128,12 @@
         var G = 0.1 // gravitational acceleration
 
 
-        var user = new User(x, y, ballRadius, dx, dy);
+        var user = new User(x, y, ballRadius, dx, dy, 0);
         var platforms = loadMap(canvas);
 
         var agents = [
-            new Agent(canvas.width - 200, canvas.height - 20, 20, 0, 0),
-            new Agent(canvas.width - 150, canvas.height - 20, 20, 0, 0)
+            new Agent(canvas.width - 200, canvas.height - 20, 20, 0, 0, 0),
+            new Agent(canvas.width - 150, canvas.height - 20, 20, 0, 0, 0)
         ];
 
         console.log(isReachable(platforms[0].x2, platforms[0].y2, platforms[1].x1, platforms[1].y2, 1.5, 7.5));
@@ -168,7 +171,7 @@
         // console.log("0 to 3 " + findPath(0, 3));
         // console.log("4 to 3 " + findPath(4, 3));
 
-        function findPath (start, end) {
+        function findPath(start, end) {
             var n = reachabilityGraph.length;
             var visited = []
             visited[0] = false;
@@ -220,6 +223,18 @@
             }
 
             detectCollisionWithAgentAndUpdate() {
+
+                for (var j = 0; j < this.agents.length; j++) {
+                    for (var i = 0; i < this.platforms.length; i++) {
+                        if (this.agents[j].x > this.platforms[i].x1 && this.agents[j].x < this.platforms[i].x1 + this.platforms[i].width
+                            && this.agents[j].y < this.platforms[i].y1 && this.agents[j].y + this.agents[j].radius + this.agents[j].y_vel >= this.platforms[i].y1 - platformHeight) {
+                            // this.agents[j].y_vel = Math.min(this.agents[j].y_vel, 0);
+                            // this.agents[j].y = this.platforms[i].y1 - platformHeight - this.agents[j].radius;                            
+                            this.agents[j].pf = i;
+                        }
+                    }
+                }
+
                 for (var i = 0; i < this.agents.length; i++) {
                     // 1. Detect collision with side and top walls 
                     if (this.agents[i].x + this.agents[i].x_vel > this.width - this.agents[i].radius ||
@@ -245,6 +260,7 @@
                         this.agents[i].y += this.agents[i].y_vel;
                     }
 
+
                     if (this.distSq(this.user.x, this.user.y, this.agents[i].x, this.agents[i].y)
                         <= 0.6 * Math.pow(this.user.radius + this.agents[i].radius, 2)) {
                         // console.log()
@@ -253,6 +269,7 @@
                 }
                 return false;
             }
+
 
             detectCollisionAndUpdate() {
                 // 1. Detect collision with side and top walls 
@@ -266,16 +283,16 @@
 
                 // 2. Detect collision with platforms
                 var isPlatformUnderneath = false;
-
                 for (var i = 0; i < this.platforms.length; i++) {
                     if (this.user.x > this.platforms[i].x1 && this.user.x < this.platforms[i].x1 + this.platforms[i].width
                         && this.user.y < this.platforms[i].y1 && this.user.y + this.user.radius + this.user.y_vel >= this.platforms[i].y1 - platformHeight) {
                         this.user.y_vel = Math.min(this.user.y_vel, 0);
                         this.user.y = this.platforms[i].y1 - platformHeight - this.user.radius;
                         isPlatformUnderneath = true;
-                        // console.log("platform under");
+                        this.user.pf = i;
                     }
                 }
+                console.log("platform under " + isPlatformUnderneath);
                 // 3. Floor detection and update velocities
                 this.user.x += this.user.x_vel;
                 if (this.user.y >= this.height - this.user.radius) {
@@ -292,7 +309,6 @@
                     this.user.y += this.user.y_vel;
                 }
 
-
             }
         }
 
@@ -305,6 +321,8 @@
             time += 1;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             user.drawUser(ctx);
+            console.log("pf under user = " + user.pf);
+            agents.forEach(a => console.log("pf under agents = " + a.pf));
             for (var i = 0; i < agents.length; i++) {
                 agents[i].drawAgent(ctx);
             }
