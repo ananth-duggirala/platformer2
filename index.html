@@ -128,7 +128,7 @@
         var platformHeight = 10;
 
         var maxBallSpeed = 6;
-        var AGENT_X_VEL = 3;
+        var AGENT_X_VEL = 3.5;
         var AGENT_Y_VEL = 7.5;
         X_ACCL = 0.2;
         USER_Y_VEL = 7.5;
@@ -236,15 +236,15 @@
                     var isPlatformUnderneath = false;
                     for (var i = 0; i < this.platforms.length; i++) {
                         if (this.agents[j].x > this.platforms[i].x1 && this.agents[j].x < this.platforms[i].x1 + this.platforms[i].width
-                            && this.agents[j].y < this.platforms[i].y1 && this.agents[j].y + this.agents[j].radius + this.agents[j].y_vel >= this.platforms[i].y1 - platformHeight && 
+                            && this.agents[j].y < this.platforms[i].y1 && this.agents[j].y + this.agents[j].radius + this.agents[j].y_vel >= this.platforms[i].y1 - platformHeight &&
                             this.agents[j].y_vel >= 0) {
                             this.agents[j].y_vel = Math.min(this.agents[j].y_vel, 0);
-                            this.agents[j].y = this.platforms[i].y1 - platformHeight - this.agents[j].radius;        
-                            
+                            this.agents[j].y = this.platforms[i].y1 - platformHeight - this.agents[j].radius;
+
                             if (i != this.agents[j].pf)
                                 this.agents[j].inTransit = false;
-                            
-                            this.agents[j].pf = i;                            
+
+                            this.agents[j].pf = i;
                             isPlatformUnderneath = true;
                         }
                     }
@@ -364,27 +364,23 @@
 
                 if (agents[i].pf == user.pf) {
                     var delta_x = user.x - agents[i].x;
-                    // var delta_y = user.y - agents[i].y;
                     agents[i].x_vel = Math.sign(delta_x) * AGENT_X_VEL;
                     agents[i].y_vel = agents[i].y_vel == 0 ? 0 : agents[i].y_vel;
-                    // agents[i].inTransit = false;
-                    // agents[i].y_vel = agents[i].y_vel == 0 ? Math.sign(delta_y) * AGENT_Y_VEL : agents[i].y_vel;
-                    // console.log("agent v_y " + agents[i].y_vel + " agent y " + agents[i].y);
                 } else {
                     var path = findPath(agents[i].pf, user.pf);
                     console.log("path " + path);
                     var currPf = platforms[path[0]];
                     var nextPf = platforms[path[1]];
                     agents[i].next_pf = path[1];
-                    // case 1:
-                    //              ----u--
 
-                    //  ------a-
                     if (currPf.x2 < nextPf.x1) {
+                        // case 1:
+                        //              ----u--
+
+                        //  ------a-
                         if (agents[i].x < currPf.x2 - agents[i].radius) {
                             agents[i].x_vel = AGENT_X_VEL;
                         } else {
-                            // agents
                             var dist = nextPf.x1 + agents[i].radius - agents[i].x;
                             var timeReq = timeToReach(agents[i].x, agents[i].y
                                 , nextPf.x1 + agents[i].radius, nextPf.y2);
@@ -393,13 +389,11 @@
                             agents[i].x_vel = req_vel;
                             agents[i].inTransit = true;
                         }
-                    }
-                    // case 2:
-                    //     --u--
+                    } else if (nextPf.x1 >= currPf.x1 && nextPf.x2 <= currPf.x2) {
+                        // case 2:
+                        //     --u--
 
-                    //----------a--------------ground
-
-                    if (nextPf.x1 >= currPf.x1 && nextPf.x2 <= currPf.x2) {
+                        //----------a--------------ground
                         if (!(agents[i].x >= nextPf.x1 && agents[i].x <= nextPf.x2)) {
                             var delta_x = nextPf.x1 - agents[i].x;
                             agents[i].x_vel = Math.sign(delta_x) * AGENT_X_VEL;
@@ -407,7 +401,23 @@
                             agents[i].y_vel = agents[i].y_vel == 0 ? -AGENT_Y_VEL : agents[i].y_vel;
                         }
                     }
-                } 
+                    else if (currPf.x1 > nextPf.x2) {
+                        // case 3:
+                        // ----u--
+
+                        //          ------a-
+                        if (agents[i].x > currPf.x1 + agents[i].radius) {
+                            agents[i].x_vel = -AGENT_X_VEL;
+                        } else {
+                            var dist = agents[i].x - (nextPf.x2 - agents[i].radius);
+                            var timeReq = timeToReach(agents[i].x, agents[i].y, nextPf.x2 - agents[i].radius, nextPf.y2);
+                            var req_vel = dist / timeReq;
+                            agents[i].y_vel = agents[i].y_vel == 0 ? -AGENT_Y_VEL : agents[i].y_vel;
+                            agents[i].x_vel = -req_vel;
+                            agents[i].inTransit = true;
+                        }
+                    }
+                }
             }
 
             if (rightPressed) {
