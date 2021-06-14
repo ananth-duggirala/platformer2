@@ -117,7 +117,8 @@
 
         var canvas = document.getElementById("myCanvas");
         var ctx = canvas.getContext("2d");
-
+        ctx.font = "30px Arial";
+        ctx.fillText("Score", 10, 50);
         var x = canvas.width - 100;
 
         var ballRadius = 15;
@@ -216,7 +217,9 @@
         var leftPressed = false;
         var upPressed = false;
         var time = 0;
-
+        function distSq(x1, y1, x2, y2) {
+            return Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2);
+        }
         class CollisionDetection {
             constructor(width, height, user, platforms, agents, g) {
                 this.width = width;
@@ -226,11 +229,6 @@
                 this.g = g;
                 this.agents = agents;
             }
-
-            distSq(x1, y1, x2, y2) {
-                return Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2);
-            }
-
             detectCollisionWithAgentAndUpdate() {
                 var isPfUnder = [];
                 for (var j = 0; j < this.agents.length; j++) {
@@ -277,7 +275,7 @@
                         this.agents[i].y += this.agents[i].y_vel;
                     }
 
-                    if (this.distSq(this.user.x, this.user.y, this.agents[i].x, this.agents[i].y)
+                    if (distSq(this.user.x, this.user.y, this.agents[i].x, this.agents[i].y)
                         <= 0.9 * Math.pow(this.user.radius + this.agents[i].radius, 2)) {
                         // console.log()
                         return true;
@@ -332,11 +330,21 @@
 
         var collisionEngine = new CollisionDetection(canvas.width, canvas.height, user, platforms, agents, G);
         var GAME_OVER = false;
+        var SCORE = 0;
         // var time = 0;
+
+        function updateScore() {
+            for (var i = 0; i < agents.length; i++) {
+                SCORE += (1 / distSq(agents[i].x, agents[i].y, user.x, user.y)) * 10000; 
+            }
+        }
+
         function draw() {
             time += 1;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             user.drawUser(ctx);
+            updateScore();
+            ctx.fillText("Score = " + Math.trunc(SCORE), 10, 50);
             console.log("pf under user = " + user.pf);
             agents.forEach(a => console.log("pf under agents = " + a.pf));
             for (var i = 0; i < agents.length; i++) {
@@ -349,6 +357,7 @@
 
             if (GAME_OVER) {
                 alert("GAME OVER");
+                SCORE = 0;
                 document.location.reload();
                 // clearInterval(interval);
             }
