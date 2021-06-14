@@ -20,7 +20,7 @@
 
 <body>
 
-    <canvas id="myCanvas" width="800" height="900"></canvas>
+    <canvas id="myCanvas" width="800" height="1000"></canvas>
 
     <script>
         // JavaScript code goes here
@@ -129,6 +129,7 @@
 
         var maxBallSpeed = 6;
         var AGENT_X_VEL = 3.5;
+        var AGENT_X_VEL_SLOW = 0.75;
         var AGENT_Y_VEL = 7.5;
         X_ACCL = 0.2;
         USER_Y_VEL = 7.5;
@@ -389,20 +390,8 @@
                             agents[i].x_vel = req_vel;
                             agents[i].inTransit = true;
                         }
-                    } else if (nextPf.x1 >= currPf.x1 && nextPf.x2 <= currPf.x2) {
+                    } else if (currPf.x1 > nextPf.x2) {
                         // case 2:
-                        //     --u--
-
-                        //----------a--------------ground
-                        if (!(agents[i].x >= nextPf.x1 && agents[i].x <= nextPf.x2)) {
-                            var delta_x = nextPf.x1 - agents[i].x;
-                            agents[i].x_vel = Math.sign(delta_x) * AGENT_X_VEL;
-                        } else { // below the next platform
-                            agents[i].y_vel = agents[i].y_vel == 0 ? -AGENT_Y_VEL : agents[i].y_vel;
-                        }
-                    }
-                    else if (currPf.x1 > nextPf.x2) {
-                        // case 3:
                         // ----u--
 
                         //          ------a-
@@ -414,6 +403,25 @@
                             var req_vel = dist / timeReq;
                             agents[i].y_vel = agents[i].y_vel == 0 ? -AGENT_Y_VEL : agents[i].y_vel;
                             agents[i].x_vel = -req_vel;
+                            agents[i].inTransit = true;
+                        }
+                    } else {
+                        // case 3: There is some intersection
+                        //     --u--
+
+                        //----------a--------------
+                        var delta_x = nextPf.x1 - agents[i].x;
+                        if (!(agents[i].x >= nextPf.x1 && agents[i].x <= nextPf.x2)) {
+                            agents[i].x_vel = Math.sign(delta_x) * AGENT_X_VEL;
+                        } else {    // below the next platform
+                            if (nextPf.y2 > currPf.y2) {
+                                agents[i].x_vel = Math.sign(delta_x) * AGENT_X_VEL_SLOW;
+                            }
+                            else {
+                                agents[i].x_vel = 0;
+                                agents[i].y_vel = agents[i].y_vel == 0 ? -AGENT_Y_VEL : agents[i].y_vel;
+
+                            }
                             agents[i].inTransit = true;
                         }
                     }
