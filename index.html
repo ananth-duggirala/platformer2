@@ -20,10 +20,31 @@
 
 <body>
 
-    <canvas id="myCanvas" width="800" height="1000"></canvas>
+    <canvas id="myCanvas" width="1500" height="1000"></canvas>
+    <!-- 
+    <form id="frm1">
+        First name: <input type="text" name="fname" value="Donald"><br>
+        Last name: <input type="text" name="lname" value="Duck"><br><br>        
+    </form>
+    <p>Click "Try it" to display the value of each element in the form.</p>
+
+    <button onclick="myFunction()">Try it</button> -->
 
     <script>
+        function myFunction() {
+            var x = document.getElementById("frm1");
+            var text = "";
+            var i;
+            for (i = 0; i < x.length; i++) {
+                text += x.elements[i].value + "<br>";
+            }
+            // document.getElementById("demo").innerHTML = text;
+            console.log(text);
+            requestAnimationFrame(draw);
+        }
         // JavaScript code goes here
+
+
 
         class RectangularPlatform {
             width;
@@ -112,6 +133,8 @@
 
             platforms.push(new RectangularPlatform(50, canvas.height - 400, 150, canvas.height - 410));
             platforms.push(new RectangularPlatform(100, canvas.height - 600, 250, canvas.height - 610));
+            platforms.push(new RectangularPlatform(canvas.width - 200, canvas.height - 400, canvas.width - 100, canvas.height - 410));
+            platforms.push(new RectangularPlatform(canvas.width - 400, canvas.height - 200, canvas.width - 250, canvas.height - 210));
             return platforms;
         }
 
@@ -119,7 +142,7 @@
         var ctx = canvas.getContext("2d");
         ctx.font = "30px Arial";
         ctx.fillText("Score", 10, 50);
-        var x = canvas.width - 100;
+        var x = canvas.width/2;
 
         var ballRadius = 15;
         var GAME_DURATION = 60;
@@ -144,7 +167,7 @@
 
         var agents = [
             new Agent(50, canvas.height - 20, 20, 0, 0, false),
-            new Agent(20, canvas.height - 20, 20, 0, 0, false)
+            new Agent(canvas.width - 50, canvas.height - 20, 20, 0, 0, false)
         ];
 
         console.log(isReachable(platforms[0].x2, platforms[0].y2, platforms[1].x1, platforms[1].y2, 1.5, 7.5));
@@ -360,8 +383,8 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             user.drawUser(ctx);
             updateScore();
-            ctx.fillText("Score = " + Math.trunc(SCORE), 10, 50);
-            ctx.fillText("Remaining Time = " + Math.trunc(GAME_DURATION - timeElapsed()) + "s", canvas.width - 350, 50);
+            ctx.fillText("Score: " + Math.trunc(SCORE), 10, 50);
+            ctx.fillText("Remaining Time: " + Math.trunc(GAME_DURATION - timeElapsed()) + "s", canvas.width - 350, 50);
             console.log("pf under user = " + user.pf);
             agents.forEach(a => console.log("pf under agents = " + a.pf));
             for (var i = 0; i < agents.length; i++) {
