@@ -23,8 +23,6 @@
     <canvas id="myCanvas" width="800" height="1000"></canvas>
 
     <script>
-        // JavaScript code goes here
-
         class RectangularPlatform {
             width;
             height;
@@ -119,25 +117,27 @@
         var ctx = canvas.getContext("2d");
         ctx.font = "30px Arial";
         ctx.fillText("Score", 10, 50);
-        var x = canvas.width - 100;
 
-        var ballRadius = 15;
-        var GAME_DURATION = 60;
+        // initial ball position and velocity
+        var x = canvas.width - 100;
         var y = canvas.height - ballRadius;
         var dx = 0;
         var dy = 0;
-        var platformWidth = 60;
-        var platformHeight = 10;
+        var G = 0.1 // gravitational acceleration
 
+        var ballRadius = 15;
         var maxBallSpeed = 6;
-        var AGENT_X_VEL = 3.5;
-        var AGENT_X_VEL_SLOW = 0.75;
-        var AGENT_Y_VEL = 7.5;
         X_ACCL = 0.2;
         USER_Y_VEL = 7.5;
 
-        var G = 0.1 // gravitational acceleration
+        var AGENT_X_VEL = 3.5;
+        var AGENT_X_VEL_SLOW = 0.75;
+        var AGENT_Y_VEL = 7.5;
 
+        var platformWidth = 60;
+        var platformHeight = 10;
+
+        var GAME_DURATION = 60;
 
         var user = new User(x, y, ballRadius, dx, dy, 0);
         var platforms = loadMap(canvas);
@@ -147,8 +147,9 @@
             new Agent(20, canvas.height - 20, 20, 0, 0, false)
         ];
 
-        console.log(isReachable(platforms[0].x2, platforms[0].y2, platforms[1].x1, platforms[1].y2, 1.5, 7.5));
+        // console.log(isReachable(platforms[0].x2, platforms[0].y2, platforms[1].x1, platforms[1].y2, 1.5, 7.5));
 
+        // calculating the reachability graph where two nodes are connected if the platforms are reachable from each other
         var reachabilityGraph = [];
         for (var i = 0; i < platforms.length; i++)
             reachabilityGraph.push([]);
@@ -182,6 +183,7 @@
         // console.log("0 to 3 " + findPath(0, 3));
         // console.log("4 to 3 " + findPath(4, 3));
 
+        // find paths for the agent
         function findPath(start, end) {
             var n = reachabilityGraph.length;
             var visited = []
@@ -219,8 +221,9 @@
         var upPressed = false;
         var time = 0;
         function distSq(x1, y1, x2, y2) {
-            return Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2);
+            return Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2); // square of Euclidean distance
         }
+
         class CollisionDetection {
             constructor(width, height, user, platforms, agents, g) {
                 this.width = width;
