@@ -39,12 +39,10 @@
                 text += x.elements[i].value + "<br>";
             }
             // document.getElementById("demo").innerHTML = text;
-            console.log(text);
+            // console.log(text);
             requestAnimationFrame(draw);
         }
         // JavaScript code goes here
-
-
 
         class RectangularPlatform {
             width;
@@ -107,11 +105,30 @@
             }
         }
 
+
+        class Projectile {
+            constructor(x, y, radius, x_vel, y_vel) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.x_vel = x_vel;
+                this.y_vel = y_vel;
+            }
+
+            drawProjectile(ctx) {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = "#000000";
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
+
         function timeToReach(from_x, from_y, to_x, to_y) {
             horizontal_distance = Math.abs(to_x - from_x);
             vertical_distance = Math.abs(to_y - from_y);
             time_to_reach_vertical_distance = (AGENT_Y_VEL + Math.sqrt(AGENT_Y_VEL * AGENT_Y_VEL - 2 * G * vertical_distance)) / G; // quadratic formula
-            console.log("h_dist = " + horizontal_distance + " v_dist = " + vertical_distance + " time_avail =  " + time_to_reach_vertical_distance + " x1 " + from_x + " y1 " + from_y + " x2 " + to_x + " y2 " + to_y);
+            // console.log("h_dist = " + horizontal_distance + " v_dist = " + vertical_distance + " time_avail =  " + time_to_reach_vertical_distance + " x1 " + from_x + " y1 " + from_y + " x2 " + to_x + " y2 " + to_y);
             return time_to_reach_vertical_distance;
         }
 
@@ -159,6 +176,9 @@
         X_ACCL = 0.2;
         USER_Y_VEL = 7.5;
 
+
+        var projectileSpeed = 50;
+
         var G = 0.1 // gravitational acceleration
 
 
@@ -167,10 +187,11 @@
 
         var agents = [
             new Agent(50, canvas.height - 20, 20, 0, 0, false),
-            new Agent(canvas.width - 50, canvas.height - 20, 20, 0, 0, false)
+            // new Agent(canvas.width - 50, canvas.height - 20, 20, 0, 0, false)
         ];
+        var projectiles = [];
 
-        console.log(isReachable(platforms[0].x2, platforms[0].y2, platforms[1].x1, platforms[1].y2, 1.5, 7.5));
+        // console.log(isReachable(platforms[0].x2, platforms[0].y2, platforms[1].x1, platforms[1].y2, 1.5, 7.5));
 
         var reachabilityGraph = [];
         for (var i = 0; i < platforms.length; i++)
@@ -178,7 +199,7 @@
 
         for (var i = 0; i < platforms.length; i++) {
             for (var j = i + 1; j < platforms.length; j++) {
-                console.log("i " + i + " j " + j);
+                // console.log("i " + i + " j " + j);
                 var reachable = false;
 
                 if (platforms[j].x2 < platforms[i].x1) { // case 2
@@ -197,7 +218,7 @@
             }
         }
         for (var i = 0; i < platforms.length; i++) {
-            console.log(i + " -> " + reachabilityGraph[i]);
+            // console.log(i + " -> " + reachabilityGraph[i]);
         }
 
         // console.log("0 to 4 " + findPath(0, 4));
@@ -244,6 +265,7 @@
         function distSq(x1, y1, x2, y2) {
             return Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2);
         }
+
         class CollisionDetection {
             constructor(width, height, user, platforms, agents, g) {
                 this.width = width;
@@ -260,6 +282,7 @@
                 }
 
                 var isPfUnder = [];
+
                 for (var j = 0; j < this.agents.length; j++) {
                     var isPlatformUnderneath = false;
                     for (var i = 0; i < this.platforms.length; i++) {
@@ -310,6 +333,7 @@
                         return true;
                     }
                 }
+
                 return false;
             }
 
@@ -335,7 +359,7 @@
                         this.user.pf = i;
                     }
                 }
-                console.log("platform under " + isPlatformUnderneath);
+                // console.log("platform under " + isPlatformUnderneath);
                 // 3. Floor detection and update velocities
                 this.user.x += this.user.x_vel;
                 if (this.user.y >= this.height - this.user.radius) {
@@ -353,6 +377,11 @@
                 }
 
             }
+        }
+
+        function detectCollisionWithProjectile() {
+            return false;
+            // TODO
         }
 
         // console.log("hello" + user.radius);
@@ -385,17 +414,26 @@
             updateScore();
             ctx.fillText("Score: " + Math.trunc(SCORE), 10, 50);
             ctx.fillText("Remaining Time: " + Math.trunc(GAME_DURATION - timeElapsed()) + "s", canvas.width - 350, 50);
-            console.log("pf under user = " + user.pf);
-            agents.forEach(a => console.log("pf under agents = " + a.pf));
+            // console.log("pf under user = " + user.pf);
+            // agents.forEach(a => console.log("pf under agents = " + a.pf));
             for (var i = 0; i < agents.length; i++) {
                 agents[i].drawAgent(ctx);
             }
             for (var i = 0; i < platforms.length; i++) {
                 platforms[i].drawPlatform(ctx);
             }
-            // if (time % 10 == 0)
+            for (var i = 0; i < projectiles.length; i++) {
+                projectiles[i].drawProjectile(ctx);
+            }
 
-            if (GAME_OVER) {
+
+            // console.log("t = " + time + " v_y = " + dy + " y = " + y);
+            collisionEngine.detectCollisionAndUpdate();
+            GAME_OVER = collisionEngine.detectCollisionWithAgentAndUpdate();
+            GAME_OVER2 = detectCollisionWithProjectile();
+
+
+            if (GAME_OVER || GAME_OVER2) {
                 alert("GAME OVER");
                 SCORE = 0;
                 START_TIMESTAMP = timestamp() - 3;  // buffer for reload!
@@ -403,13 +441,23 @@
                 // clearInterval(interval);
             }
 
-            console.log("t = " + time + " v_y = " + dy + " y = " + y);
-            collisionEngine.detectCollisionAndUpdate();
-            GAME_OVER = collisionEngine.detectCollisionWithAgentAndUpdate();
+            // update for projectile
+            if (projectiles.length < timeElapsed()) {
+                diff_x = user.x - agents[0].x
+                diff_y = user.y - agents[0].y
+
+                Nom = Math.sqrt(diff_x*diff_x + diff_y*diff_y)
+                projectiles.push(new Projectile(agents[0].x, agents[0].y, 10, 10*diff_x/Nom, 10*diff_y/Nom));
+            }
+
+            for (var i = 0; i < projectiles.length; i++) {
+                projectiles[i].x += projectiles[i].x_vel;
+                projectiles[i].y += projectiles[i].y_vel;
+            }
 
             // update for agent
             for (var i = 0; i < agents.length; i++) {
-                console.log("user pf " + user.pf + " agent " + i + " pf = " + agents[i].pf + " intransit " + agents[i].inTransit);
+                // console.log("user pf " + user.pf + " agent " + i + " pf = " + agents[i].pf + " intransit " + agents[i].inTransit);
                 if (agents[i].inTransit)
                     continue;
 
@@ -419,7 +467,7 @@
                     agents[i].y_vel = agents[i].y_vel == 0 ? 0 : agents[i].y_vel;
                 } else {
                     var path = findPath(agents[i].pf, user.pf);
-                    console.log("path " + path);
+                    // console.log("path " + path);
                     var currPf = platforms[path[0]];
                     var nextPf = platforms[path[1]];
                     agents[i].next_pf = path[1];
